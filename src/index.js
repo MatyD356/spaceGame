@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import './style.css'
+import model from '../models/scene.glb';
 
 const scene = new THREE.Scene()
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -28,8 +30,8 @@ pointLight.shadow.camera.right = 1
 pointLight.shadow.camera.top = 1
 pointLight.shadow.camera.bottom = -1
 
-pointLight.shadow.mapSize.width = 1024; // default 1024
-pointLight.shadow.mapSize.height = 1024; // default 1024
+pointLight.shadow.mapSize.width = 512; // default 1024
+pointLight.shadow.mapSize.height = 512; // default 1024
 pointLight.shadow.camera.near = 5;
 pointLight.shadow.camera.far = 400;
 
@@ -59,6 +61,11 @@ const handleResize = () => {
 
 const helper = new THREE.CameraHelper(pointLight.shadow.camera);
 scene.add(helper);
+console.log(model)
+const loader = new GLTFLoader();
+loader.load(model, (gltf) => {
+  scene.add(gltf.scene)
+})
 
 const animate = () => {
   cube.rotation.y += 0.01

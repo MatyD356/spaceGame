@@ -10,12 +10,24 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.css$/, use: ['style-loader', 'css-loader'] }
+      { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+      {
+        test: /\.(glb|gltf)$/,
+        use:
+          [
+            {
+              loader: 'file-loader',
+              options: {
+                name: '[path][name].[ext]'
+              }
+            }
+          ]
+      },
     ]
   },
   devServer: {
     clientLogLevel: 'silent',
-    contentBase: './dist',
+    contentBase: path.resolve(__dirname, 'public'),
     hot: true,
   },
 
