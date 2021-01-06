@@ -10,7 +10,7 @@ renderer.setSize(window.innerWidth, window.innerHeight)
 document.body.appendChild(renderer.domElement)
 
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100000)
-camera.position.set(0, 0, 5)
+camera.position.set(0, 15, 15)
 
 
 const light = new THREE.AmbientLight(0xffffff);
@@ -23,10 +23,15 @@ pointLight.castShadow = true; // default false
 scene.add(pointLight);
 
 //Set up shadow properties for the light
+pointLight.shadow.camera.left = -1
+pointLight.shadow.camera.right = 1
+pointLight.shadow.camera.top = 1
+pointLight.shadow.camera.bottom = -1
+
 pointLight.shadow.mapSize.width = 1024; // default 1024
 pointLight.shadow.mapSize.height = 1024; // default 1024
-pointLight.shadow.camera.near = 1;
-pointLight.shadow.camera.far = 100;
+pointLight.shadow.camera.near = 5;
+pointLight.shadow.camera.far = 400;
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
