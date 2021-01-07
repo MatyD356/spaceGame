@@ -15,25 +15,31 @@ const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerH
 camera.position.set(0, 15, 15)
 
 
-const light = new THREE.AmbientLight(0xffffff);
-scene.add(light);
+/* const light = new THREE.AmbientLight(0xffffff);
+scene.add(light); */
 
 
-const pointLight = new THREE.DirectionalLight(0xffffff, 1, 100);
+const pointLight = new THREE.SpotLight(0xffffff, 0.2, 100);
 pointLight.position.set(0, 10, 0);
 pointLight.castShadow = true; // default false
 scene.add(pointLight);
 
+const pointLight2 = new THREE.SpotLight(0xffffff, 0.7, 100);
+pointLight2.position.set(0, 10, 0);
+scene.add(pointLight2);
+
 //Set up shadow properties for the light
-pointLight.shadow.camera.left = -1
+/* pointLight.shadow.camera.left = -1
 pointLight.shadow.camera.right = 1
 pointLight.shadow.camera.top = 1
 pointLight.shadow.camera.bottom = -1
-
-pointLight.shadow.mapSize.width = 512; // default 1024
-pointLight.shadow.mapSize.height = 512; // default 1024
+pointLight.shadow.radius = 10
+ */
+pointLight.shadow.mapSize.width = 1024; // default 1024
+pointLight.shadow.mapSize.height = 1024; // default 1024
 pointLight.shadow.camera.near = 5;
-pointLight.shadow.camera.far = 400;
+pointLight.shadow.camera.far = 10;
+pointLight.shadow.focus = 1;
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
@@ -64,15 +70,18 @@ const helper = new THREE.CameraHelper(pointLight.shadow.camera);
 scene.add(helper);
 
 const loader = new GLTFLoader();
+let mathilda = null
 loader.load(model, (gltf) => {
   gltf.scene.scale.set(0.02, 0.02, 0.02)
   gltf.scene.traverse((node) => {
     node.isMesh ? node.castShadow = true : null
   });
+  mathilda = gltf.scene
   scene.add(gltf.scene)
 })
 
 const animate = () => {
+  mathilda ? mathilda.rotation.y += 0.01 : null
   cube.rotation.y += 0.01
   cube.rotation.x += 0.01
   controls.update();
