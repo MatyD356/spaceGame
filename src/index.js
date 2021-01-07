@@ -42,28 +42,33 @@ const cubeGeo = new THREE.BoxGeometry();
 const cubeMat = new THREE.MeshStandardMaterial({ color: 0x6CF05D });
 const cube = new THREE.Mesh(cubeGeo, cubeMat);
 cube.castShadow = true;
-scene.add(cube);
 
 const planeGeo = new THREE.PlaneGeometry(10, 10, 100, 100);
 const planeMat = new THREE.MeshStandardMaterial({ color: 0xeb4034 });
 const plane = new THREE.Mesh(planeGeo, planeMat);
 plane.material.side = THREE.DoubleSide;
 plane.receiveShadow = true;
-plane.position.set(0, -2, 0);
+plane.position.set(0, 0, 0);
 plane.rotation.set(Math.PI / 2, 0, 0);
 scene.add(plane);
 
 const handleResize = () => {
   const { innerWidth, innerHeight } = window
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight)
 }
 //Create a helper for the shadow camera (optional)
 
 const helper = new THREE.CameraHelper(pointLight.shadow.camera);
 scene.add(helper);
-console.log(model)
+
 const loader = new GLTFLoader();
 loader.load(model, (gltf) => {
+  gltf.scene.scale.set(0.02, 0.02, 0.02)
+  gltf.scene.traverse((node) => {
+    node.isMesh ? node.castShadow = true : null
+  });
   scene.add(gltf.scene)
 })
 
