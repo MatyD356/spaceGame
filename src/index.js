@@ -2,7 +2,10 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import './style.css'
-import model from '../models/scene.glb';
+
+import model from '../models/mathilde/scene.glb';
+import carModel from '../models/car/scene.glb';
+
 
 const scene = new THREE.Scene()
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -15,8 +18,8 @@ const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerH
 camera.position.set(0, 15, 15)
 
 
-/* const light = new THREE.AmbientLight(0xffffff);
-scene.add(light); */
+const light = new THREE.AmbientLight(0xffffff);
+scene.add(light);
 
 
 const pointLight = new THREE.SpotLight(0xffffff, 0.2, 100);
@@ -31,15 +34,15 @@ scene.add(pointLight2);
 //Set up shadow properties for the light
 /* pointLight.shadow.camera.left = -1
 pointLight.shadow.camera.right = 1
-pointLight.shadow.camera.top = 1
 pointLight.shadow.camera.bottom = -1
 pointLight.shadow.radius = 10
+pointLight.shadow.camera.top = 1
  */
 pointLight.shadow.mapSize.width = 1024; // default 1024
 pointLight.shadow.mapSize.height = 1024; // default 1024
-pointLight.shadow.camera.near = 5;
+pointLight.shadow.camera.near = 0.1;
 pointLight.shadow.camera.far = 10;
-pointLight.shadow.focus = 1;
+pointLight.shadow.focus = 5;
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
@@ -49,7 +52,7 @@ const cubeMat = new THREE.MeshStandardMaterial({ color: 0x6CF05D });
 const cube = new THREE.Mesh(cubeGeo, cubeMat);
 cube.castShadow = true;
 
-const planeGeo = new THREE.PlaneGeometry(10, 10, 100, 100);
+const planeGeo = new THREE.PlaneGeometry(100, 100, 100, 100);
 const planeMat = new THREE.MeshStandardMaterial({ color: 0xeb4034 });
 const plane = new THREE.Mesh(planeGeo, planeMat);
 plane.material.side = THREE.DoubleSide;
@@ -76,14 +79,25 @@ loader.load(model, (gltf) => {
   gltf.scene.traverse((node) => {
     node.isMesh ? node.castShadow = true : null
   });
+  gltf.scene.position.x = 2
+  gltf.scene.position.z = 6
+  gltf.scene.rotation.y = Math.PI / 2 + 0.5
   mathilda = gltf.scene
   scene.add(gltf.scene)
 })
 
+let car = null
+loader.load(carModel, (gltf) => {
+  gltf.scene.scale.set(0.02, 0.02, 0.02)
+  gltf.scene.traverse((node) => {
+    node.isMesh ? node.castShadow = true : null
+  });
+  car = gltf.scene
+  car.position.y = 0.85;
+  scene.add(gltf.scene)
+})
+
 const animate = () => {
-  mathilda ? mathilda.rotation.y += 0.01 : null
-  cube.rotation.y += 0.01
-  cube.rotation.x += 0.01
   controls.update();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
