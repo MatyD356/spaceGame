@@ -69,10 +69,11 @@ const handleResize = () => {
 }
 //Create a helper for the shadow camera (optional)
 
-const helper = new THREE.CameraHelper(pointLight.shadow.camera);
-scene.add(helper);
+/* const helper = new THREE.CameraHelper(pointLight.shadow.camera);
+scene.add(helper); */
 
 const loader = new GLTFLoader();
+
 let mathilda = null
 loader.load(model, (gltf) => {
   gltf.scene.scale.set(0.02, 0.02, 0.02)
@@ -87,17 +88,25 @@ loader.load(model, (gltf) => {
 })
 
 let car = null
+let carMixer = null
 loader.load(carModel, (gltf) => {
   gltf.scene.scale.set(0.02, 0.02, 0.02)
   gltf.scene.traverse((node) => {
     node.isMesh ? node.castShadow = true : null
   });
   car = gltf.scene
+  const animations = gltf.animations;
+  carMixer = new THREE.AnimationMixer(car);
+  const engineAnimation = carMixer.clipAction(animations[0])
+  engineAnimation.play()
+
   car.position.y = 0.85;
   scene.add(gltf.scene)
 })
-
+const clock = new THREE.Clock()
 const animate = () => {
+  var delta = clock.getDelta();
+  if (carMixer) carMixer.update(delta);
   controls.update();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
