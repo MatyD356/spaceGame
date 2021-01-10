@@ -23,6 +23,18 @@ module.exports = {
             }
           ]
       },
+      {
+        test: /\.(png|jp?g)$/,
+        use:
+          [
+            {
+              loader: 'file-loader',
+              options: {
+                name: '[path][name].[ext]'
+              }
+            }
+          ]
+      },
     ]
   },
   devServer: {

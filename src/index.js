@@ -6,6 +6,16 @@ import './style.css'
 import model from '../models/mathilde/scene.glb';
 import carModel from '../models/car/scene.glb';
 
+import back from '../assets/back.png'
+import down from '../assets/down.png'
+import front from '../assets/front.png'
+import left from '../assets/left.png'
+import right from '../assets/right.png'
+import up from '../assets/up.png'
+
+
+
+
 
 const scene = new THREE.Scene()
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -17,6 +27,17 @@ document.body.appendChild(renderer.domElement)
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100000)
 camera.position.set(0, 15, 15)
 
+
+const skyLoader = new THREE.CubeTextureLoader()
+const skyTextures = skyLoader.load([
+  right,
+  left,
+  up,
+  down,
+  front,
+  back,
+])
+scene.background = skyTextures
 
 const light = new THREE.AmbientLight(0xffffff);
 scene.add(light);
