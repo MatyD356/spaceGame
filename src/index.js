@@ -135,3 +135,22 @@ const animate = () => {
 }
 animate();
 window.addEventListener('resize', handleResize);
+window.addEventListener('keydown', (e) => {
+  switch (e.key) {
+    case 'w':
+      console.log('forward')
+      break
+    case 's':
+      console.log('bakcwards')
+      break
+    case 'd':
+      console.log('right')
+      break
+    case 'a':
+      console.log('left')
+      break
+    default:
+      console.log('error');
+
+  }
+})
