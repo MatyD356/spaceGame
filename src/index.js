@@ -12,6 +12,8 @@ import knightModel from '../models/knight/castle_guard_01.fbx'
 
 //animations
 import breathingIdle from '../models/animations/Breathing-Idle.fbx'
+import running from '../models/animations/Running.fbx'
+
 
 //skybox textures
 import back from '../assets/back.png'
@@ -133,16 +135,19 @@ let knightMixer = null
 const fbxLoader = new FBXLoader()
 fbxLoader.load(knightModel, (fbx) => {
   knight = fbx
+  knightMixer = new THREE.AnimationMixer(knight)
   fbx.traverse((node) => {
     node.isMesh ? node.castShadow = true : null
   })
   const animLoader = new FBXLoader()
   animLoader.load(breathingIdle, (anim) => {
-    knightMixer = new THREE.AnimationMixer(anim)
-    console.log(anim);
     const idle = knightMixer.clipAction(anim.animations[0], knight)
-    console.log(idle);
     idle.play()
+  })
+  const runLoader = new FBXLoader()
+  runLoader.load(running, (anim) => {
+    const run = knightMixer.clipAction(anim.animations[0], knight)
+    run.play()
   })
   knight.position.z = -9;
   knight.rotation.y = 2 / Math.PI;
