@@ -1,10 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
+
 import './style.css'
 
 import model from '../models/mathilde/scene.glb';
 import carModel from '../models/car/scene.glb';
+import knightModel from '../models/knight/castle_guard_01.fbx'
 
 import back from '../assets/back.png'
 import down from '../assets/down.png'
@@ -12,10 +15,6 @@ import front from '../assets/front.png'
 import left from '../assets/left.png'
 import right from '../assets/right.png'
 import up from '../assets/up.png'
-
-
-
-
 
 const scene = new THREE.Scene()
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -94,6 +93,7 @@ const handleResize = () => {
 scene.add(helper); */
 
 const loader = new GLTFLoader();
+const fbxLoader = new FBXLoader()
 
 let mathilda = null
 loader.load(model, (gltf) => {
@@ -124,6 +124,18 @@ loader.load(carModel, (gltf) => {
   scene.add(gltf.scene)
 })
 
+let knight = null
+fbxLoader.load(knightModel, (fbx) => {
+  knight = fbx
+  fbx.traverse((node) => {
+    node.isMesh ? node.castShadow = true : null
+  })
+  knight.position.z = -9;
+  knight.rotation.y = 2 / Math.PI;
+  knight.scale.set(0.02, 0.02, 0.02)
+  scene.add(knight)
+})
+
 const clock = new THREE.Clock()
 
 const animate = () => {
@@ -133,6 +145,7 @@ const animate = () => {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
+
 animate();
 window.addEventListener('resize', handleResize);
 window.addEventListener('keydown', (e) => {
@@ -150,7 +163,6 @@ window.addEventListener('keydown', (e) => {
       console.log('left')
       break
     default:
-      console.log('error');
-
+      break
   }
 })

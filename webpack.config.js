@@ -12,7 +12,7 @@ module.exports = {
     rules: [
       { test: /\.css$/, use: ['style-loader', 'css-loader'] },
       {
-        test: /\.(glb|gltf)$/,
+        test: /\.(glb|gltf|fbx)$/,
         use:
           [
             {
