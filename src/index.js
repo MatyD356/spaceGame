@@ -5,10 +5,15 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 
 import './style.css'
 
+//models
 import model from '../models/mathilde/scene.glb';
 import carModel from '../models/car/scene.glb';
 import knightModel from '../models/knight/castle_guard_01.fbx'
 
+//animations
+import breathingIdle from '../models/animations/Breathing-Idle.fbx'
+
+//skybox textures
 import back from '../assets/back.png'
 import down from '../assets/down.png'
 import front from '../assets/front.png'
@@ -67,10 +72,10 @@ pointLight.shadow.focus = 5;
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
 
-const cubeGeo = new THREE.BoxGeometry();
+/* const cubeGeo = new THREE.BoxGeometry();
 const cubeMat = new THREE.MeshStandardMaterial({ color: 0x6CF05D });
 const cube = new THREE.Mesh(cubeGeo, cubeMat);
-cube.castShadow = true;
+cube.castShadow = true; */
 
 const planeGeo = new THREE.PlaneGeometry(100, 100, 100, 100);
 const planeMat = new THREE.MeshStandardMaterial({ color: 0xeb4034 });
@@ -93,7 +98,6 @@ const handleResize = () => {
 scene.add(helper); */
 
 const loader = new GLTFLoader();
-const fbxLoader = new FBXLoader()
 
 let mathilda = null
 loader.load(model, (gltf) => {
@@ -125,10 +129,20 @@ loader.load(carModel, (gltf) => {
 })
 
 let knight = null
+let knightMixer = null
+const fbxLoader = new FBXLoader()
 fbxLoader.load(knightModel, (fbx) => {
   knight = fbx
   fbx.traverse((node) => {
     node.isMesh ? node.castShadow = true : null
+  })
+  const animLoader = new FBXLoader()
+  animLoader.load(breathingIdle, (anim) => {
+    knightMixer = new THREE.AnimationMixer(anim)
+    console.log(anim);
+    const idle = knightMixer.clipAction(anim.animations[0], knight)
+    console.log(idle);
+    idle.play()
   })
   knight.position.z = -9;
   knight.rotation.y = 2 / Math.PI;
@@ -139,8 +153,9 @@ fbxLoader.load(knightModel, (fbx) => {
 const clock = new THREE.Clock()
 
 const animate = () => {
-  var delta = clock.getDelta();
+  let delta = clock.getDelta();
   if (carMixer) carMixer.update(delta);
+  if (knightMixer) knightMixer.update(delta);
   controls.update();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
