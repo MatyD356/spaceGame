@@ -168,21 +168,63 @@ const animate = () => {
 
 animate();
 window.addEventListener('resize', handleResize);
+
+//--- CONTROLS --- //
+
+const movement = {
+  forward: false,
+  backward: false,
+  left: false,
+  right: false,
+  space: false,
+  shift: false,
+}
+
 window.addEventListener('keydown', (e) => {
   switch (e.key) {
     case 'w':
-      console.log('forward')
+      movement.forward = true
       break
     case 's':
-      console.log('bakcwards')
+      movement.backward = true
       break
     case 'd':
-      console.log('right')
+      movement.right = true
       break
     case 'a':
-      console.log('left')
+      movement.left = true
+      break
+    case 'shift':
+      movement.shift = true
+      break
+    case 'space':
+      movement.space = true
       break
     default:
       break
   }
-})
+}, false)
+window.addEventListener('keyup', (e) => {
+  switch (e.key) {
+    case 'w':
+      movement.forward = false
+      break
+    case 's':
+      movement.backward = false
+      break
+    case 'd':
+      movement.right = false
+      break
+    case 'a':
+      movement.left = false
+      break
+    case 'shift':
+      movement.shift = false
+      break
+    case 'space':
+      movement.space = false
+      break
+    default:
+      break
+  }
+}, false)

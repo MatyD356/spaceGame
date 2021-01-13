@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cannon": "^0.6.2",
     "three": "^0.124.0",
     "webpack": "^5.11.1",
     "webpack-cli": "^4.3.1"
