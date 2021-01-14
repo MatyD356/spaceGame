@@ -1,5 +1,7 @@
 import './style.css'
 
+import * as CANNON from 'cannon'
+
 //THREE imports
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -15,6 +17,7 @@ import running from '../models/animations/Running.fbx'
 //skybox
 import { addSkyBox } from './skyBox'
 
+//characters
 
 const scene = new THREE.Scene()
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -56,7 +59,40 @@ controls.update();
 /* const cubeGeo = new THREE.BoxGeometry();
 const cubeMat = new THREE.MeshStandardMaterial({ color: 0x6CF05D });
 const cube = new THREE.Mesh(cubeGeo, cubeMat);
-cube.castShadow = true; */
+cube.castShadow = true;
+scene.add(cube) */
+//CANNON
+const world = new CANNON.World()
+world.gravity.set(0, -9.82, 0)
+const normalMaterial = new THREE.MeshNormalMaterial()
+const cubeGeometry = new THREE.BoxGeometry(1, 1, 1)
+const cubeMesh = new THREE.Mesh(cubeGeometry, normalMaterial)
+cubeMesh.position.x = -3
+cubeMesh.position.y = 3
+cubeMesh.castShadow = true
+scene.add(cubeMesh)
+const cubeShape = new CANNON.Box(new CANNON.Vec3(.5, .5, .5))
+const cubeBody = new CANNON.Body({ mass: 1 });
+cubeBody.addShape(cubeShape)
+cubeBody.position.x = cubeMesh.position.x
+cubeBody.position.y = cubeMesh.position.y
+cubeBody.position.z = cubeMesh.position.z
+world.addBody(cubeBody)
+
+function CreateTrimesh(geometry) {
+  if (!(geometry).attributes) {
+    geometry = new THREE.BufferGeometry().fromGeometry(geometry);
+  }
+  const vertices = (geometry).attributes.position.array
+  const indices = Object.keys(vertices).map(Number);
+  return new CANNON.Trimesh(vertices, indices);
+}
+
+const planeShape = new CANNON.Plane()
+const planeBody = new CANNON.Body({ mass: 0 })
+planeBody.addShape(planeShape)
+planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
+world.addBody(planeBody)
 
 const planeGeo = new THREE.PlaneGeometry(100, 100, 100, 100);
 const planeMat = new THREE.MeshStandardMaterial({ color: 0xeb4034 });
@@ -73,37 +109,41 @@ const handleResize = () => {
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight)
 }
-
-let knight = null
+/* 
+let knightCharacter = null
 let knightMixer = null
 const fbxLoader = new FBXLoader()
 fbxLoader.load(knightModel, (fbx) => {
-  knight = fbx
-  knightMixer = new THREE.AnimationMixer(knight)
+  knightCharacter = fbx
+  knightMixer = new THREE.AnimationMixer()
   fbx.traverse((node) => {
     node.isMesh ? node.castShadow = true : null
   })
-  const animLoader = new FBXLoader()
-  animLoader.load(breathingIdle, (anim) => {
-    const idle = knightMixer.clipAction(anim.animations[0], knight)
-    idle.play()
-  })
   const runLoader = new FBXLoader()
   runLoader.load(running, (anim) => {
-    const run = knightMixer.clipAction(anim.animations[0], knight)
+    const run = knightMixer.clipAction(anim.animations[0], knightCharacter)
   })
-  knight.scale.set(0.02, 0.02, 0.02)
-  scene.add(knight)
+  const animLoader = new FBXLoader()
+  animLoader.load(breathingIdle, (anim) => {
+    const idle = knightMixer.clipAction(anim.animations[0], knightCharacter)
+    idle.play()
+  })
+  knightCharacter.scale.set(0.02, 0.02, 0.02)
+  scene.add(knightCharacter)
 })
-
+ */
 const clock = new THREE.Clock()
 
 const animate = () => {
-  let delta = clock.getDelta();
-  if (knightMixer) knightMixer.update(delta);
+  let delta = clock.getDelta()
+  if (delta > .1) delta = .1
+  world.step(delta)
+  cubeMesh.position.set(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z);
+  //if (knightMixer) knightMixer.update(delta);
   controls.update();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
+
 }
 
 animate();
