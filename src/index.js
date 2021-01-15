@@ -1,12 +1,13 @@
 import './style.css'
 
-import * as CANNON from 'cannon'
+import * as CANNON from 'cannon-es'
+import cannonDebugger from 'cannon-es-debugger'
+
 
 //THREE imports
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
-
 //models
 import knightModel from '../models/knight/castle_guard_01.fbx'
 
@@ -69,6 +70,8 @@ const initThree = () => {
 
   clock = new THREE.Clock()
   controls = new OrbitControls(camera, renderer.domElement);
+  cannonDebugger(scene, world.bodies)
+
 
   document.body.appendChild(renderer.domElement)
   window.addEventListener('resize', handleResize);
@@ -94,7 +97,7 @@ const createBody = () => {
   body.addShape(shape)
   body.position.set(0, 0, 0)
   body.linearDamping = 0.01
-  world.add(body)
+  world.addBody(body)
   //visuals
   const normalMaterial = new THREE.MeshNormalMaterial()
   const geometry = new THREE.BoxGeometry(2, 1, 1)
@@ -133,8 +136,8 @@ const createPlane = () => {
   planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
   world.addBody(planeBody)
 }
-initThree()
 initCannon()
+initThree()
 createPlane()
 createBody()
 animate()
