@@ -27,10 +27,17 @@ const animate = () => {
   let delta = clock.getDelta()
   if (delta > .1) delta = .1
   world.step(delta)
+  updateMeshPositions();
   //if (knightMixer) knightMixer.update(delta);
   controls.update();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
+}
+const updateMeshPositions = () => {
+  for (var i = 0; i !== meshes.length; i++) {
+    meshes[i].position.copy(bodies[i].position);
+    meshes[i].quaternion.copy(bodies[i].quaternion);
+  }
 }
 
 const initThree = () => {
@@ -72,7 +79,6 @@ const initThree = () => {
   controls = new OrbitControls(camera, renderer.domElement);
   cannonDebugger(scene, world.bodies)
 
-
   document.body.appendChild(renderer.domElement)
   window.addEventListener('resize', handleResize);
 }
@@ -90,20 +96,20 @@ const initCannon = () => {
   world.gravity.set(0, -9.82, 0)
 }
 const createBody = () => {
-  //physics
-  const shape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
-  const material = new CANNON.Material()
-  const body = new CANNON.Body({ mass: 5, material })
-  body.addShape(shape)
-  body.position.set(0, 0, 0)
-  body.linearDamping = 0.01
-  world.addBody(body)
   //visuals
   const normalMaterial = new THREE.MeshNormalMaterial()
-  const geometry = new THREE.BoxGeometry(2, 1, 1)
+  const geometry = new THREE.BoxGeometry(1, 1, 1)
   const mesh = new THREE.Mesh(geometry, normalMaterial)
   mesh.position.set(0, 5, 0)
   scene.add(mesh)
+  meshes.push(mesh);
+  //physics
+  const shape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
+  const body = new CANNON.Body({ mass: 1 })
+  body.addShape(shape)
+  body.position.set(mesh.position.x, mesh.position.y, mesh.position.z)
+  world.addBody(body)
+  bodies.push(body)
 }
 const createCube = () => {
   const normalMaterial = new THREE.MeshNormalMaterial()
@@ -129,12 +135,14 @@ const createPlane = () => {
   plane.position.set(0, 0, 0);
   plane.rotation.set(Math.PI / 2, 0, 0);
   scene.add(plane);
+  meshes.push(plane);
   //plane cannon
   const planeShape = new CANNON.Plane()
   const planeBody = new CANNON.Body({ mass: 0 })
   planeBody.addShape(planeShape)
   planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
   world.addBody(planeBody)
+  bodies.push(planeBody)
 }
 initCannon()
 initThree()
