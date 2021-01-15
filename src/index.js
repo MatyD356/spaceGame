@@ -17,91 +17,62 @@ import running from '../models/animations/Running.fbx'
 //skybox
 import { addSkyBox } from './skyBox'
 
-//characters
+//variables
+let scene, camera, world, controls, clock, renderer
+const meshes = []
+const bodies = []
 
-const scene = new THREE.Scene()
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFShadowMap;
-renderer.setSize(window.innerWidth, window.innerHeight)
-document.body.appendChild(renderer.domElement)
-
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100000)
-camera.position.set(0, 15, 15)
-
-const light = new THREE.AmbientLight(0xffffff);
-scene.add(light);
-
-scene.background = addSkyBox()
-
-const pointLight = new THREE.SpotLight(0xffffff, 0.5, 100);
-pointLight.position.set(0, 10, 0);
-pointLight.castShadow = true; // default false
-scene.add(pointLight);
-
-const pointLight2 = new THREE.DirectionalLight(0xffffff, 0.5, 100);
-pointLight2.position.set(0, 10, 0);
-scene.add(pointLight2);
-
-pointLight.shadow.camera.left = -1
-pointLight.shadow.camera.right = 1
-pointLight.shadow.camera.bottom = -1
-pointLight.shadow.radius = 10
-pointLight.shadow.camera.top = 1
-pointLight.shadow.mapSize.width = 1024; // default 1024
-pointLight.shadow.mapSize.height = 1024; // default 1024
-pointLight.shadow.camera.near = 0.1;
-pointLight.shadow.camera.far = 10;
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.update();
-
-/* const cubeGeo = new THREE.BoxGeometry();
-const cubeMat = new THREE.MeshStandardMaterial({ color: 0x6CF05D });
-const cube = new THREE.Mesh(cubeGeo, cubeMat);
-cube.castShadow = true;
-scene.add(cube) */
-//CANNON
-const world = new CANNON.World()
-world.gravity.set(0, -9.82, 0)
-const normalMaterial = new THREE.MeshNormalMaterial()
-const cubeGeometry = new THREE.BoxGeometry(1, 1, 1)
-const cubeMesh = new THREE.Mesh(cubeGeometry, normalMaterial)
-cubeMesh.position.x = -3
-cubeMesh.position.y = 3
-cubeMesh.castShadow = true
-scene.add(cubeMesh)
-const cubeShape = new CANNON.Box(new CANNON.Vec3(.5, .5, .5))
-const cubeBody = new CANNON.Body({ mass: 1 });
-cubeBody.addShape(cubeShape)
-cubeBody.position.x = cubeMesh.position.x
-cubeBody.position.y = cubeMesh.position.y
-cubeBody.position.z = cubeMesh.position.z
-world.addBody(cubeBody)
-
-function CreateTrimesh(geometry) {
-  if (!(geometry).attributes) {
-    geometry = new THREE.BufferGeometry().fromGeometry(geometry);
-  }
-  const vertices = (geometry).attributes.position.array
-  const indices = Object.keys(vertices).map(Number);
-  return new CANNON.Trimesh(vertices, indices);
+const animate = () => {
+  let delta = clock.getDelta()
+  if (delta > .1) delta = .1
+  world.step(delta)
+  //if (knightMixer) knightMixer.update(delta);
+  controls.update();
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
 }
 
-const planeShape = new CANNON.Plane()
-const planeBody = new CANNON.Body({ mass: 0 })
-planeBody.addShape(planeShape)
-planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
-world.addBody(planeBody)
+const initThree = () => {
+  //scene
+  scene = new THREE.Scene()
+  scene.fog = new THREE.Fog(0x000000, 500, 10000);
+  scene.background = addSkyBox()
+  //renderer
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  //camera
+  camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100000)
+  camera.position.set(0, 15, 15)
+  //lights
+  const light = new THREE.AmbientLight(0xffffff);
 
-const planeGeo = new THREE.PlaneGeometry(100, 100, 100, 100);
-const planeMat = new THREE.MeshStandardMaterial({ color: 0xeb4034 });
-const plane = new THREE.Mesh(planeGeo, planeMat);
-plane.material.side = THREE.DoubleSide;
-plane.receiveShadow = true;
-plane.position.set(0, 0, 0);
-plane.rotation.set(Math.PI / 2, 0, 0);
-scene.add(plane);
+  const pointLight = new THREE.SpotLight(0xffffff, 0.5, 100);
+  pointLight.position.set(0, 10, 0);
+  pointLight.castShadow = true; // default false
+
+  const pointLight2 = new THREE.DirectionalLight(0xffffff, 0.5, 100);
+  pointLight2.position.set(0, 10, 0);
+
+  scene.add(light, pointLight, pointLight2);
+
+  pointLight.shadow.camera.left = -1
+  pointLight.shadow.camera.right = 1
+  pointLight.shadow.camera.bottom = -1
+  pointLight.shadow.radius = 10
+  pointLight.shadow.camera.top = 1
+  pointLight.shadow.mapSize.width = 1024; // default 1024
+  pointLight.shadow.mapSize.height = 1024; // default 1024
+  pointLight.shadow.camera.near = 0.1;
+  pointLight.shadow.camera.far = 10;
+
+  clock = new THREE.Clock()
+  controls = new OrbitControls(camera, renderer.domElement);
+
+  document.body.appendChild(renderer.domElement)
+  window.addEventListener('resize', handleResize);
+}
 
 const handleResize = () => {
   const { innerWidth, innerHeight } = window
@@ -109,8 +80,69 @@ const handleResize = () => {
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight)
 }
-/* 
-let knightCharacter = null
+//CANNON
+const initCannon = () => {
+  world = new CANNON.World()
+  world.broadphase = new CANNON.NaiveBroadphase()
+  world.gravity.set(0, -9.82, 0)
+}
+const createBody = () => {
+  //physics
+  const shape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
+  const material = new CANNON.Material()
+  const body = new CANNON.Body({ mass: 5, material })
+  body.addShape(shape)
+  body.position.set(0, 0, 0)
+  body.linearDamping = 0.01
+  world.add(body)
+  //visuals
+  const normalMaterial = new THREE.MeshNormalMaterial()
+  const geometry = new THREE.BoxGeometry(2, 1, 1)
+  const mesh = new THREE.Mesh(geometry, normalMaterial)
+  mesh.position.set(0, 5, 0)
+  scene.add(mesh)
+}
+const createCube = () => {
+  const normalMaterial = new THREE.MeshNormalMaterial()
+  const cubeGeometry = new THREE.BoxGeometry(1, 1, 1)
+  const cubeMesh = new THREE.Mesh(cubeGeometry, normalMaterial)
+  cubeMesh.position.x = -3
+  cubeMesh.position.y = 3
+  cubeMesh.castShadow = true
+  const cubeShape = new CANNON.Box(new CANNON.Vec3(.5, .5, .5))
+  const cubeBody = new CANNON.Body({ mass: 1 });
+  cubeBody.addShape(cubeShape)
+  cubeBody.position.x = cubeMesh.position.x
+  cubeBody.position.y = cubeMesh.position.y
+  cubeBody.position.z = cubeMesh.position.z
+  return { mesh: cubeMesh, body: cubeBody }
+}
+const createPlane = () => {
+  const planeGeo = new THREE.PlaneGeometry(100, 100, 100, 100);
+  const planeMat = new THREE.MeshStandardMaterial({ color: 0xeb4034 });
+  const plane = new THREE.Mesh(planeGeo, planeMat);
+  plane.material.side = THREE.DoubleSide;
+  plane.receiveShadow = true;
+  plane.position.set(0, 0, 0);
+  plane.rotation.set(Math.PI / 2, 0, 0);
+  scene.add(plane);
+  //plane cannon
+  const planeShape = new CANNON.Plane()
+  const planeBody = new CANNON.Body({ mass: 0 })
+  planeBody.addShape(planeShape)
+  planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
+  world.addBody(planeBody)
+}
+initThree()
+initCannon()
+createPlane()
+createBody()
+animate()
+
+
+
+//--- EXAMPLES ---//
+/* let knightCharacter = null
 let knightMixer = null
 const fbxLoader = new FBXLoader()
 fbxLoader.load(knightModel, (fbx) => {
@@ -130,27 +162,9 @@ fbxLoader.load(knightModel, (fbx) => {
   })
   knightCharacter.scale.set(0.02, 0.02, 0.02)
   scene.add(knightCharacter)
-})
- */
-const clock = new THREE.Clock()
-
-const animate = () => {
-  let delta = clock.getDelta()
-  if (delta > .1) delta = .1
-  world.step(delta)
-  cubeMesh.position.set(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z);
-  //if (knightMixer) knightMixer.update(delta);
-  controls.update();
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-
-}
-
-animate();
-window.addEventListener('resize', handleResize);
-
+}) */
 //--- CONTROLS --- //
-
+/*
 const movement = {
   forward: false,
   backward: false,
@@ -207,4 +221,4 @@ window.addEventListener('keyup', (e) => {
     default:
       break
   }
-}, false)
+}, false) */
