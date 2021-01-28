@@ -98,15 +98,17 @@ const initCannon = () => {
 const createBody = () => {
   //visuals
   const normalMaterial = new THREE.MeshNormalMaterial()
-  const geometry = new THREE.BoxGeometry(1, 1, 1)
+  const geometry = new THREE.CylinderBufferGeometry(0.5, 0.5, 1)
   const mesh = new THREE.Mesh(geometry, normalMaterial)
   mesh.position.set(0, 5, 0)
   scene.add(mesh)
   meshes.push(mesh);
   //physics
-  const shape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
+  const shape = new CANNON.Cylinder(1, 1, 1)
+  const sphere = new CANNON.Sphere(1)
   const body = new CANNON.Body({ mass: 1 })
   body.addShape(shape)
+  body.addShape(sphere, new CANNON.Vec3(0, 1, 0))
   body.position.set(mesh.position.x, mesh.position.y, mesh.position.z)
   world.addBody(body)
   bodies.push(body)
