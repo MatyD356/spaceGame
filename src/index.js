@@ -98,17 +98,31 @@ const initCannon = () => {
 const createBody = () => {
   //visuals
   const normalMaterial = new THREE.MeshNormalMaterial()
-  const geometry = new THREE.CylinderBufferGeometry(0.5, 0.5, 1)
+  const geometry = new THREE.BoxGeometry(1, 1, 1)
+  const mesh = new THREE.Mesh(geometry, normalMaterial)
+  mesh.position.set(2, 1, 0)
+  scene.add(mesh)
+  meshes.push(mesh);
+  //physics
+  const box = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))
+  const body = new CANNON.Body({ mass: 1 })
+  body.addShape(box)
+  body.position.set(mesh.position.x, mesh.position.y, mesh.position.z)
+  world.addBody(body)
+  bodies.push(body)
+}
+const createSphere = () => {
+  //visuals
+  const normalMaterial = new THREE.MeshNormalMaterial()
+  const geometry = new THREE.SphereGeometry(1)
   const mesh = new THREE.Mesh(geometry, normalMaterial)
   mesh.position.set(0, 5, 0)
   scene.add(mesh)
   meshes.push(mesh);
-  //physics
-  const shape = new CANNON.Cylinder(1, 1, 1)
+
   const sphere = new CANNON.Sphere(1)
-  const body = new CANNON.Body({ mass: 1 })
-  body.addShape(shape)
-  body.addShape(sphere, new CANNON.Vec3(0, 1, 0))
+  const body = new CANNON.Body({ mass: 1, material: groundMaterial })
+  body.addShape(sphere, new CANNON.Vec3(0, 0, 0))
   body.position.set(mesh.position.x, mesh.position.y, mesh.position.z)
   world.addBody(body)
   bodies.push(body)
@@ -140,19 +154,52 @@ const createPlane = () => {
   meshes.push(plane);
   //plane cannon
   const planeShape = new CANNON.Plane()
-  const planeBody = new CANNON.Body({ mass: 0 })
+  const planeBody = new CANNON.Body({ mass: 0, material: groundMaterial })
   planeBody.addShape(planeShape)
   planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
   world.addBody(planeBody)
   bodies.push(planeBody)
 }
+
 initCannon()
 initThree()
+
+var groundMaterial = new CANNON.Material("groundMaterial");
+
+// Adjust constraint equation parameters for ground/ground contact
+var ground_ground_cm = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
+  friction: 1,
+  restitution: 0.3,
+  contactEquationStiffness: 1e8,
+  contactEquationRelaxation: 3,
+  frictionEquationStiffness: 1e8,
+  frictionEquationRegularizationTime: 3,
+});
+
+// Add contact material to the world
+world.addContactMaterial(ground_ground_cm); var groundMaterial = new CANNON.Material("groundMaterial");
+
+// Adjust constraint equation parameters for ground/ground contact
+var ground_ground_cm = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
+  friction: 0.4,
+  restitution: 0.3,
+  contactEquationStiffness: 1e8,
+  contactEquationRelaxation: 3,
+  frictionEquationStiffness: 1e8,
+  frictionEquationRegularizationTime: 3,
+});
+
+// Add contact material to the world
+world.addContactMaterial(ground_ground_cm);
 createPlane()
+createSphere()
 createBody()
 animate()
 
-
+window.addEventListener('click', () => {
+  console.log(bodies[1].velocity);
+  bodies[1].velocity.x += 5;
+})
 
 //--- EXAMPLES ---//
 /* let knightCharacter = null
