@@ -196,9 +196,19 @@ createSphere()
 createBody()
 animate()
 
-window.addEventListener('click', () => {
-  console.log(bodies[1].velocity);
-  bodies[1].velocity.x += 5;
+window.addEventListener('keydown', (e) => {
+  console.log(e.code);
+  if (e.code === 'Space') {
+    bodies[1].velocity.y += 5;
+  } else if (e.code === 'KeyW') {
+    bodies[1].velocity.z += 1;
+  } else if (e.code === 'KeyS') {
+    bodies[1].velocity.z -= 1;
+  } else if (e.code === 'KeyD') {
+    bodies[1].velocity.x += 1;
+  } else if (e.code === 'KeyA') {
+    bodies[1].velocity.x -= 1;
+  }
 })
 
 //--- EXAMPLES ---//
